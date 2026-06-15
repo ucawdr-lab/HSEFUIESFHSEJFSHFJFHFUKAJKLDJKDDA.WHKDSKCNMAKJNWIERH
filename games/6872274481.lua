@@ -645,13 +645,23 @@ entitylib.start()
 
 run(function()
 	local KnitInit, Knit
+	local tries = 0
 	repeat
 		KnitInit, Knit = pcall(function()
 			return require(replicatedStorage.rbxts_include.node_modules["@easy-games"].knit.src).KnitClient
 		end)
-		if KnitInit then break end
-		task.wait()
-	until KnitInit
+		if not (KnitInit and Knit) then
+			KnitInit, Knit = pcall(function()
+				return debug.getupvalue(require(lplr.PlayerScripts.TS.knit).setup, 9)
+			end)
+		end
+		if KnitInit and Knit then break end
+		tries += 1
+		task.wait(0.1)
+	until tries > 150
+	if not (KnitInit and Knit) then
+		return vape:CreateNotification('Vape', 'Bedwars detection failed: Knit not found (game may have updated)', 12, 'alert')
+	end
 
 	if not debug.getupvalue(Knit.Start, 1) then
 		repeat task.wait() until debug.getupvalue(Knit.Start, 1)
